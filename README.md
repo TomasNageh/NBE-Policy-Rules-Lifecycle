@@ -6,6 +6,7 @@
 
 <p align="center">
   A full-stack enterprise web application for managing the end-to-end lifecycle of policies and compliance rules at the National Bank of Egypt.
+  Made For the Summer Internship Program 2026
 </p>
 
 <p align="center">
