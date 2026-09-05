@@ -1,0 +1,60 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* NBE Official Brand Tokens */
+    --color-nbe-green:       #00693E;  /* Primary green — logo, nav, CTAs */
+    --color-nbe-green-dark:  #004F2D;  /* Deeper green — hover states */
+    --color-nbe-orange:      #F7941D;  /* Accent orange — icons, highlights */
+    --color-nbe-orange-dark: #E07F0A;  /* Darker orange — hover */
+    --color-nbe-white:       #FFFFFF;
+    --color-nbe-canvas:      #F8F8F8;
+    --color-nbe-border:      #E8E8E8;
+
+    /* Legacy aliases kept for backward compatibility */
+    --color-nbe-primary: #00693E;
+    --color-nbe-navy:    #004F2D;
+    --color-nbe-gold:    #F7941D;
+  }
+
+  body {
+    @apply bg-[#F8F8F8] text-slate-900 font-sans;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+}
+
+/* NBE card — rounded, soft drop-shadow, white background */
+.enterprise-card {
+  @apply bg-white border border-[#E8E8E8] rounded-xl shadow-nbe-card;
+}
+
+.enterprise-card-header {
+  @apply px-5 py-4 border-b border-[#E8E8E8] bg-white flex items-center justify-between rounded-t-xl;
+}
+
+/* Status badge base */
+.enterprise-badge {
+  @apply inline-flex items-center px-2 py-0.5 text-xs font-semibold tracking-wide border rounded-md;
+}
+
+/* Custom scrollbars — green-tinted thumb */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f5f5f5;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #9FCFB3;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #4FA870;
+}
+

@@ -1,0 +1,185 @@
+// Prisma schema for NBE Policy Management System
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Canonical Roles ──────────────────────────────────────────────────────────
+// Exactly THREE roles:
+//   USER    — Policy author (creates, edits, submits, revises policies)
+//   CHECKER — Compliance reviewer (claims, approves, requests changes)
+//   ADMIN   — Workflow supervisor (monitors, reassigns, configures, manages users)
+enum UserRole {
+  USER
+  CHECKER
+  ADMIN
+}
+
+// ─── Policy Lifecycle ─────────────────────────────────────────────────────────
+// DRAFT        → USER is editing (initial or after changes requested)
+// QUEUED       → Submitted, waiting for a CHECKER to claim
+// UNDER_REVIEW → CHECKER has claimed and is reviewing
+// APPROVED     → CHECKER approved; version locked permanently
+//
+// NOTE: CHANGES_REQUESTED is NOT a Policy status.
+//       It lives only on PolicyReview.decision.
+//       When a CHECKER requests changes, Policy returns to DRAFT.
+enum PolicyStatus {
+  DRAFT
+  QUEUED
+  UNDER_REVIEW
+  APPROVED
+}
+
+// ─── Policy Version Lifecycle ─────────────────────────────────────────────────
+enum VersionStatus {
+  DRAFT
+  PENDING
+  APPROVED
+  CHANGES_REQUESTED
+}
+
+// ─── Review Decision ──────────────────────────────────────────────────────────
+enum ReviewDecision {
+  PENDING
+  APPROVED
+  CHANGES_REQUESTED
+}
+
+// ─── Models ───────────────────────────────────────────────────────────────────
+
+model User {
+  id              String         @id @default(uuid())
+  email           String         @unique
+  passwordHash    String
+  fullName        String
+  role            UserRole       @default(USER)
+  department      String?
+  isActive        Boolean        @default(true)
+  policies        Policy[]
+  assignedReviews PolicyReview[]
+  auditLogs       AuditLog[]
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  @@map("users")
+}
+
+model Policy {
+  id            String          @id @default(uuid())
+  title         String
+  documentCode  String          @unique
+  category      String
+  description   String?
+  ownerId       String
+  owner         User            @relation(fields: [ownerId], references: [id])
+  currentStatus PolicyStatus    @default(DRAFT)
+  versions      PolicyVersion[]
+  reviews       PolicyReview[]
+  deletedAt     DateTime?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  @@map("policies")
+}
+
+model PolicyVersion {
+  id            String          @id @default(uuid())
+  policyId      String
+  policy        Policy          @relation(fields: [policyId], references: [id], onDelete: Cascade)
+  versionNumber Int             @default(1)
+  status        VersionStatus   @default(DRAFT)
+  changeSummary String?
+  sourceFileUrl String?
+  sections      PolicySection[]
+  reviews       PolicyReview[]
+  submittedAt   DateTime?
+  approvedAt    DateTime?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  @@unique([policyId, versionNumber])
+  @@map("policy_versions")
+}
+
+model PolicySection {
+  id                       String        @id @default(uuid())
+  versionId                String
+  version                  PolicyVersion @relation(fields: [versionId], references: [id], onDelete: Cascade)
+  sectionNumber            Int
+  title                    String
+  controlArea              String?
+  policyStatement          String
+  rolesAndResponsibilities String?
+  procedures               String?
+  standardProcedure        String?
+  requiredRecords          String?
+  controlsAndChecks        String?
+  exceptionsAndEscalation  String?
+  kpiExamples              String?
+  testingScenario          String?
+  complianceNotes          String?
+  exceptions               String?
+  unmatchedContent         String?
+  orderIndex               Int           @default(0)
+  parseStatus              String?       @default("MATCHED")
+  createdAt                DateTime      @default(now())
+  updatedAt                DateTime      @updatedAt
+
+  @@map("policy_sections")
+}
+
+model PolicyReview {
+  id               String         @id @default(uuid())
+  policyId         String
+  policy           Policy         @relation(fields: [policyId], references: [id], onDelete: Cascade)
+  versionId        String         @unique  // Exactly ONE review per submitted version
+  version          PolicyVersion  @relation(fields: [versionId], references: [id], onDelete: Cascade)
+  checkerId        String?
+  checker          User?          @relation(fields: [checkerId], references: [id])
+  slaHours         Int            @default(24)
+  decision         ReviewDecision @default(PENDING)
+  feedback         String?
+  slaBreached      Boolean        @default(false)  // Set at decision time; preserved permanently
+  reassignReason   String?
+  queuedAt         DateTime       @default(now())
+  assignedAt       DateTime?
+  decisionAt       DateTime?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  @@map("policy_reviews")
+}
+
+// ─── SLA Configuration ────────────────────────────────────────────────────────
+// Managed by ADMIN. Applied at submission time.
+// Changing config does NOT affect existing reviews (slaHours is copied into PolicyReview).
+model SlaConfig {
+  id          String   @id @default(uuid())
+  category    String   @unique
+  slaHours    Int
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("sla_configs")
+}
+
+model AuditLog {
+  id         String   @id @default(uuid())
+  userId     String
+  user       User?    @relation(fields: [userId], references: [id])
+  action     String
+  entityType String
+  entityId   String
+  metadata   Json?
+  ipAddress  String?
+  createdAt  DateTime @default(now())
+
+  @@map("audit_logs")
+}
