@@ -1,0 +1,56 @@
+name: Deploy Frontend to GitHub Pages
+
+on:
+  push:
+    branches:
+      - master
+  # Allow manual trigger from the GitHub Actions UI
+  workflow_dispatch:
+
+# Grant GITHUB_TOKEN write permission to push to gh-pages branch
+permissions:
+  contents: write
+
+jobs:
+  build-and-deploy:
+    name: Build & Deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Checkout repository
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2. Setup Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      # 3. Install dependencies
+      - name: Install dependencies
+        working-directory: frontend
+        run: npm ci
+
+      # 4. Build the frontend
+      #    VITE_API_URL is read from the GitHub repository secret.
+      #    Set it in: Settings → Secrets and variables → Actions → New repository secret
+      - name: Build frontend
+        working-directory: frontend
+        env:
+          VITE_API_URL: ${{ secrets.VITE_API_URL }}
+          VITE_APP_NAME: 'NBE Policy Management System'
+        run: npm run build
+
+      # 5. Deploy to GitHub Pages (gh-pages branch)
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: frontend/dist
+          # Keep deployment history clean
+          force_orphan: true
+          # Add a .nojekyll file so GitHub Pages doesn't process files with _ prefix
+          enable_jekyll: false

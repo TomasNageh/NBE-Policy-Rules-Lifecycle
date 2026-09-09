@@ -6,6 +6,36 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="National Bank of Egypt - Enterprise Policy Management System" />
     <title>NBE Policy Management System</title>
+    <!-- GitHub Pages SPA routing: restore path from 404.html redirect -->
+    <script>
+      (function () {
+        var redirect = sessionStorage.redirect;
+        delete sessionStorage.redirect;
+        if (redirect && redirect !== location.href) {
+          history.replaceState(null, null, redirect);
+        }
+        // Handle the ?p= query param set by 404.html
+        var l = window.location;
+        if (l.search[1] === 'p' && l.search.indexOf('p=/') === 1) {
+          var decoded = l.search
+            .slice(1)
+            .split('&')
+            .map(function (s) { return s.split('='); })
+            .reduce(function (m, s) {
+              m[decodeURIComponent(s[0])] = s[1]
+                ? decodeURIComponent(s[1].replace(/\+/g, ' '))
+                : '';
+              return m;
+            }, {});
+          var newUrl =
+            l.pathname.slice(0, -1) +
+            (decoded.p || '/') +
+            (decoded.q ? '?' + decoded.q : '') +
+            l.hash;
+          history.replaceState(null, null, newUrl);
+        }
+      })();
+    </script>
     <!-- Preconnect & Inter Font for Enterprise UI -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
