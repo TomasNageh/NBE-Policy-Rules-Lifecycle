@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/webp" href="/NBE-Policy-Rules-Lifecycle/assets/nationalbankofegypt_2.50x-C8nakmJy.webp" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="National Bank of Egypt - Enterprise Policy Management System" />
+    <title>NBE Policy Management System</title>
+    <!-- GitHub Pages SPA routing: restore path from 404.html redirect -->
+    <script>
+      (function () {
+        var redirect = sessionStorage.redirect;
+        delete sessionStorage.redirect;
+        if (redirect && redirect !== location.href) {
+          history.replaceState(null, null, redirect);
+        }
+        // Handle the ?p= query param set by 404.html
+        var l = window.location;
+        if (l.search[1] === 'p' && l.search.indexOf('p=/') === 1) {
+          var decoded = l.search
+            .slice(1)
+            .split('&')
+            .map(function (s) { return s.split('='); })
+            .reduce(function (m, s) {
+              m[decodeURIComponent(s[0])] = s[1]
+                ? decodeURIComponent(s[1].replace(/\+/g, ' '))
+                : '';
+              return m;
+            }, {});
+          var newUrl =
+            l.pathname.slice(0, -1) +
+            (decoded.p || '/') +
+            (decoded.q ? '?' + decoded.q : '') +
+            l.hash;
+          history.replaceState(null, null, newUrl);
+        }
+      })();
+    </script>
+    <!-- Preconnect & Inter Font for Enterprise UI -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script type="module" crossorigin src="/NBE-Policy-Rules-Lifecycle/assets/index-D-CFTkhk.js"></script>
+    <link rel="stylesheet" crossorigin href="/NBE-Policy-Rules-Lifecycle/assets/index-DwWRDVSJ.css">
+  </head>
+  <body class="bg-nbe-neutral-canvas text-nbe-neutral-textPrimary antialiased selection:bg-nbe-primary selection:text-white min-h-screen">
+    <div id="root"></div>
+  </body>
+</html>
