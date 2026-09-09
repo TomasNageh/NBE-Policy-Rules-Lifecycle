@@ -37,12 +37,13 @@ jobs:
       # 4. Build the frontend
       #    VITE_API_URL is read from the GitHub repository secret.
       #    Set it in: Settings → Secrets and variables → Actions → New repository secret
+      #    --base is passed explicitly via CLI to guarantee it overrides any cached config.
       - name: Build frontend
         working-directory: frontend
         env:
           VITE_API_URL: ${{ secrets.VITE_API_URL }}
           VITE_APP_NAME: 'NBE Policy Management System'
-        run: npm run build
+        run: node ./node_modules/vite/bin/vite.js build --base /NBE-Policy-Rules-Lifecycle/
 
       # 5. Deploy to GitHub Pages (gh-pages branch)
       - name: Deploy to GitHub Pages
